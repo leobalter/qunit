@@ -51,15 +51,6 @@ Test.prototype = {
 		if ( !config.pollution ) {
 			saveGlobal();
 		}
-		if ( config.notrycatch ) {
-			this.hooks( "beforeEach" );
-			return;
-		}
-		try {
-			this.hooks( "beforeEach" );
-		} catch ( e ) {
-			this.pushFailure( "beforeEach failed on " + this.testName + ": " + ( e.message || e ), extractStacktrace( e, 0 ) );
-		}
 	},
 	run: function() {
 		config.current = this;
@@ -94,24 +85,26 @@ Test.prototype = {
 		}
 	},
 	after: function() {
-		if ( config.notrycatch ) {
-			this.hooks( "afterEach" );
-			return;
-		} else {
-			try {
-				this.hooks( "afterEach" );
-			} catch ( e ) {
-				this.pushFailure( "afterEach failed on " + this.testName + ": " + ( e.message || e ), extractStacktrace( e, 0 ) );
-			}
-		}
 		checkPollution();
 	},
-	hooks: function( handler ) {
-		if ( QUnit.config[ handler ] ) {
-			QUnit.config[ handler ].call( this.testEnvironment, this.assert );
+	hooks: function( handler, global ) {
+		function callHook() {
+			if ( global && QUnit.config[ handler ] ) {
+				QUnit.config[ handler ].call( this.testEnvironment, this.assert );
+			}
+			if ( !global && this.moduleTestEnvironment && this.moduleTestEnvironment[ handler ] ) {
+				this.moduleTestEnvironment[ handler ].call( this.testEnvironment, this.assert );
+			}
 		}
-		if ( this.moduleTestEnvironment && this.moduleTestEnvironment[ handler ] ) {
-			this.moduleTestEnvironment[ handler ].call( this.testEnvironment, this.assert );
+
+		if ( config.notrycatch ) {
+			callHook.call( this );
+			return;
+		}
+		try {
+			callHook.call( this );
+		} catch ( error ) {
+			this.pushFailure( handler + " failed on " + this.testName + ": " + ( error.message || error ), extractStacktrace( error, 0 ) );
 		}
 	},
 	finish: function() {
@@ -168,7 +161,19 @@ Test.prototype = {
 				test.before();
 			});
 			synchronize(function() {
+				test.hooks( "beforeEach", true );
+			});
+			synchronize(function() {
+				test.hooks( "beforeEach" );
+			});
+			synchronize(function() {
 				test.run();
+			});
+			synchronize(function() {
+				test.hooks( "afterEach" );
+			});
+			synchronize(function() {
+				test.hooks( "afterEach", true );
 			});
 			synchronize(function() {
 				test.after();
