@@ -579,6 +579,12 @@ function sourceFromStacktrace( offset ) {
 }
 
 function synchronize( callback, last ) {
+	if ( QUnit.objectType( callback ) === "array" ) {
+		while ( callback.length ) {
+			synchronize( callback.shift() );
+		}
+		return;
+	}
 	config.queue.push( callback );
 
 	if ( config.autorun && !config.blocking ) {

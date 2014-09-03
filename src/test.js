@@ -156,31 +156,34 @@ Test.prototype = {
 			test = this;
 
 		function run() {
+
 			// each of these can by async
-			synchronize(function() {
-				test.before();
-			});
-			synchronize(function() {
-				test.hooks( "beforeEach", true );
-			});
-			synchronize(function() {
-				test.hooks( "beforeEach" );
-			});
-			synchronize(function() {
-				test.run();
-			});
-			synchronize(function() {
-				test.hooks( "afterEach" );
-			});
-			synchronize(function() {
-				test.hooks( "afterEach", true );
-			});
-			synchronize(function() {
-				test.after();
-			});
-			synchronize(function() {
-				test.finish();
-			});
+			synchronize([
+				function() {
+					test.before();
+				},
+				function() {
+					test.hooks( "beforeEach", true );
+				},
+				function() {
+					test.hooks( "beforeEach" );
+				},
+				function() {
+					test.run();
+				},
+				function() {
+					test.hooks( "afterEach" );
+				},
+				function() {
+					test.hooks( "afterEach", true );
+				},
+				function() {
+					test.after();
+				},
+				function() {
+					test.finish();
+				}
+			]);
 		}
 
 		// `bad` initialized at top of scope
