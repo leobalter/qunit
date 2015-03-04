@@ -699,7 +699,7 @@ QUnit.log(function( details ) {
 
 QUnit.testDone(function( details ) {
 	var testTitle, time, testItem, assertList,
-		good, bad, testCounts, skipped,
+		good, bad, testCounts, skipped, sourceName,
 		tests = id( "qunit-tests" );
 
 	if ( !tests ) {
@@ -722,8 +722,13 @@ QUnit.testDone(function( details ) {
 		}
 	}
 
+	sourceName = document.createElement( "p" );
+	sourceName.innerHTML = "<strong>Source: </strong>" + details.source;
+	testItem.appendChild( sourceName );
+
 	if ( bad === 0 ) {
 		addClass( assertList, "qunit-collapsed" );
+		addClass( sourceName, "qunit-collapsed" );
 	}
 
 	// testItem.firstChild is the test name
@@ -742,9 +747,13 @@ QUnit.testDone(function( details ) {
 		skipped.className = "qunit-skipped-label";
 		skipped.innerHTML = "skipped";
 		testItem.insertBefore( skipped, testTitle );
+		addEvent( testTitle, "click", function() {
+			toggleClass( sourceName, "qunit-collapsed" );
+		});
 	} else {
 		addEvent( testTitle, "click", function() {
 			toggleClass( assertList, "qunit-collapsed" );
+			toggleClass( sourceName, "qunit-collapsed" );
 		});
 
 		testItem.className = bad ? "fail" : "pass";
@@ -754,6 +763,7 @@ QUnit.testDone(function( details ) {
 		time.innerHTML = details.runtime + " ms";
 		testItem.insertBefore( time, assertList );
 	}
+
 });
 
 if ( !defined.document || document.readyState === "complete" ) {
