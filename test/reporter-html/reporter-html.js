@@ -117,7 +117,13 @@ QUnit.test( "logs location", function( assert ) {
 		}
 	}
 
-	stack = error.stack || error.sourceURL;
+	// Safari 5.1's error.sourceURL is not usefull and QUnit handles it
+	// There's no easy way to handle it here in the test file.
+	if ( /Version\/5\.1?(\.\d|\s)?(.+) Safari\/?(|7)534\./i.test( navigator.userAgent ) ) {
+		stack = false;
+	} else {
+		stack = error.stack || error.sourceURL;
+	}
 
 	// Verify QUnit supported stack trace
 	if ( !stack ) {
