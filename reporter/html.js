@@ -756,7 +756,7 @@ QUnit.testDone(function( details ) {
 	}
 
 	// Only add this information if stackTrace is supported
-	if ( Error().stack ) {
+	if ( details.source ) {
 		sourceName = document.createElement( "p" );
 		sourceName.innerHTML = "<strong>Source: </strong>" + details.source;
 		addClass( sourceName, "qunit-source" );

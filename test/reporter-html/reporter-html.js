@@ -102,13 +102,25 @@ QUnit.test( "setup", function( assert ) {
 });
 
 QUnit.test( "logs location", function( assert ) {
-	var source,
-		previous = document.getElementById( "qunit-test-output-" + assert.test.testId  )
+	var source, stack;
+	var previous = document.getElementById( "qunit-test-output-" + assert.test.testId  )
 			.previousSibling;
+	var error = new Error();
 
 	source = previous.lastChild;
 
-	if ( !Error().stack ) {
+	if ( !error.stack ) {
+		try {
+			throw error;
+		} catch ( err ) {
+			error = err;
+		}
+	}
+
+	stack = error.stack || error.sourceURL;
+
+	// Verify QUnit supported stack trace
+	if ( !stack ) {
 		assert.equal(
 			/(^| )qunit-source( |$)/.test( source.className ),
 			false,
@@ -121,7 +133,7 @@ QUnit.test( "logs location", function( assert ) {
 	assert.equal( source.firstChild.innerHTML, "Source: " );
 
 	// test/reporter-html.js is a direct reference to this test file
-	assert.ok( /\/test\/reporter-html\.js\:\d+/.test( source.innerHTML ),
+	assert.ok( /\/test\/reporter-html\/reporter-html\.js\:\d+/.test( source.innerHTML ),
 		"Source references to the current file and line number"
 	);
 });
