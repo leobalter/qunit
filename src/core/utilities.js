@@ -1,10 +1,10 @@
-var toString = Object.prototype.toString,
-	hasOwn = Object.prototype.hasOwnProperty;
+var toString = Object.prototype.toString;
+var hasOwn = Object.prototype.hasOwnProperty;
 
-// returns a new Array with the elements that are in a but not in b
+// Returns a new Array with the elements that are in a but not in b
 function diff( a, b ) {
-	var i, j,
-		result = a.slice();
+	var i, j;
+	var result = a.slice();
 
 	for ( i = 0; i < result.length; i++ ) {
 		for ( j = 0; j < b.length; j++ ) {
@@ -18,7 +18,7 @@ function diff( a, b ) {
 	return result;
 }
 
-// from jquery.js
+// From jquery.js
 function inArray( elem, array ) {
 	if ( array.indexOf ) {
 		return array.indexOf( elem );
@@ -40,9 +40,10 @@ function inArray( elem, array ) {
  * @param {Object} obj
  * @return {Object} New object with only the own properties (recursively).
  */
-function objectValues ( obj ) {
-	var key, val,
-		vals = QUnit.is( "array", obj ) ? [] : {};
+function objectValues( obj ) {
+	var key, val;
+	var vals = QUnit.is( "array", obj ) ? [] : {};
+
 	for ( key in obj ) {
 		if ( hasOwn.call( obj, key ) ) {
 			val = obj[ key ];
@@ -82,8 +83,8 @@ function objectType( obj ) {
 		return "null";
 	}
 
-	var match = toString.call( obj ).match( /^\[object\s(.*)\]$/ ),
-		type = match && match[ 1 ] || "";
+	var match = toString.call( obj ).match( /^\[object\s(.*)\]$/ );
+	var type = match && match[ 1 ] || "";
 
 	switch ( type ) {
 		case "Number":
@@ -124,7 +125,7 @@ var getUrlParams = function() {
 			current = params[ i ].split( "=" );
 			current[ 0 ] = decodeURIComponent( current[ 0 ] );
 
-			// allow just a key to turn on a flag, e.g., test.html?noglobals
+			// Allow just a key to turn on a flag, e.g., test.html?noglobals
 			current[ 1 ] = current[ 1 ] ? decodeURIComponent( current[ 1 ] ) : true;
 			if ( urlParams[ current[ 0 ] ] ) {
 				urlParams[ current[ 0 ] ] = [].concat( urlParams[ current[ 0 ] ], current[ 1 ] );

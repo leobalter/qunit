@@ -19,10 +19,10 @@ function Test( settings ) {
 
 	this.testId = generateHash( this.module.name, this.testName );
 
-	this.module.tests.push({
+	this.module.tests.push( {
 		name: this.testName,
 		testId: this.testId
-	});
+	} );
 
 	if ( settings.skip ) {
 
@@ -41,8 +41,8 @@ Test.prototype = {
 	before: function() {
 		if (
 
-			// Emit moduleStart when we're switching from one module to another
-			this.module !== config.previousModule ||
+				// Emit moduleStart when we're switching from one module to another
+				this.module !== config.previousModule ||
 
 				// They could be equal (both undefined) but if the previousModule property doesn't
 				// yet exist it means this is the first test in a suite that isn't wrapped in a
@@ -58,14 +58,14 @@ Test.prototype = {
 					passed: config.moduleStats.all - config.moduleStats.bad,
 					total: config.moduleStats.all,
 					runtime: now() - config.moduleStats.started
-				});
+				} );
 			}
 			config.previousModule = this.module;
 			config.moduleStats = { all: 0, bad: 0, started: now() };
 			runLoggingCallbacks( "moduleStart", {
 				name: this.module.name,
 				tests: this.module.tests
-			});
+			} );
 		}
 
 		config.current = this;
@@ -81,7 +81,7 @@ Test.prototype = {
 			name: this.testName,
 			module: this.module.name,
 			testId: this.testId
-		});
+		} );
 
 		if ( !config.pollution ) {
 			saveGlobal();
@@ -112,7 +112,7 @@ Test.prototype = {
 			this.pushFailure( "Died on test #" + ( this.assertions.length + 1 ) + " " +
 				this.stack + ": " + ( e.message || e ), extractStacktrace( e, 0 ) );
 
-			// else next test will carry the responsibility
+			// Else next test will carry the responsibility
 			saveGlobal();
 
 			// Restart the tests if they're blocking
@@ -209,7 +209,7 @@ Test.prototype = {
 
 			// DEPRECATED: this property will be removed in 2.0.0, use runtime instead
 			duration: this.runtime
-		});
+		} );
 
 		// QUnit.reset() is deprecated and will be replaced for a new
 		// fixture reset function on QUnit 2.0/2.1.
@@ -229,8 +229,8 @@ Test.prototype = {
 
 		function run() {
 
-			// each of these can by async
-			synchronize([
+			// Each of these can by async
+			synchronize( [
 				function() {
 					test.before();
 				},
@@ -249,13 +249,13 @@ Test.prototype = {
 				function() {
 					test.finish();
 				}
-			]);
+			] );
 		}
 
 		// `bad` initialized at top of scope
-		// defer when previous test run passed, if storage is available
+		// Defer when previous test run passed, if storage is available
 		bad = QUnit.config.reorder && defined.sessionStorage &&
-				+sessionStorage.getItem( "qunit-test-" + this.module.name + "-" + this.testName );
+			+sessionStorage.getItem( "qunit-test-" + this.module.name + "-" + this.testName );
 
 		if ( bad ) {
 			run();
@@ -288,10 +288,10 @@ Test.prototype = {
 
 		runLoggingCallbacks( "log", details );
 
-		this.assertions.push({
+		this.assertions.push( {
 			result: !!result,
 			message: message
-		});
+		} );
 	},
 
 	pushFailure: function( message, source, actual ) {
@@ -301,14 +301,14 @@ Test.prototype = {
 		}
 
 		var details = {
-				module: this.module.name,
-				name: this.testName,
-				result: false,
-				message: message || "error",
-				actual: actual || null,
-				testId: this.testId,
-				runtime: now() - this.started
-			};
+			module: this.module.name,
+			name: this.testName,
+			result: false,
+			message: message || "error",
+			actual: actual || null,
+			testId: this.testId,
+			runtime: now() - this.started
+		};
 
 		if ( source ) {
 			details.source = source;
@@ -316,10 +316,10 @@ Test.prototype = {
 
 		runLoggingCallbacks( "log", details );
 
-		this.assertions.push({
+		this.assertions.push( {
 			result: false,
 			message: message
-		});
+		} );
 	},
 
 	resolvePromise: function( promise, phase ) {
@@ -331,14 +331,16 @@ Test.prototype = {
 				QUnit.stop();
 				then.call(
 					promise,
-					function() { QUnit.start(); },
+					function() {
+						QUnit.start();
+					},
 					function( error ) {
 						message = "Promise rejected " +
 							( !phase ? "during" : phase.replace( /Each$/, "" ) ) +
 							" " + test.testName + ": " + ( error.message || error );
 						test.pushFailure( message, extractStacktrace( error, 0 ) );
 
-						// else next test will carry the responsibility
+						// Else next test will carry the responsibility
 						saveGlobal();
 
 						// Unblock
@@ -396,30 +398,30 @@ This method will throw an error in 2.0, and will be removed in 2.1
 */
 QUnit.reset = function() {
 
-	// Return on non-browser environments
-	// This is necessary to not break on node tests
-	if ( !defined.document ) {
-		return;
-	}
+// Return on non-browser environments
+// This is necessary to not break on node tests
+if ( !defined.document ) {
+	return;
+}
 
-	var fixture = defined.document && document.getElementById &&
-			document.getElementById( "qunit-fixture" );
+var fixture = defined.document && document.getElementById &&
+	document.getElementById( "qunit-fixture" );
 
-	if ( fixture ) {
-		fixture.innerHTML = config.fixture;
-	}
+if ( fixture ) {
+	fixture.innerHTML = config.fixture;
+}
 };
 
 QUnit.pushFailure = function() {
-	if ( !QUnit.config.current ) {
-		throw new Error( "pushFailure() assertion outside test context, in " +
-			sourceFromStacktrace( 2 ) );
-	}
+if ( !QUnit.config.current ) {
+	throw new Error( "pushFailure() assertion outside test context, in " +
+		sourceFromStacktrace( 2 ) );
+}
 
-	// Gets current test obj
-	var currentTest = QUnit.config.current;
+// Gets current test obj
+var currentTest = QUnit.config.current;
 
-	return currentTest.pushFailure.apply( currentTest, arguments );
+return currentTest.pushFailure.apply( currentTest, arguments );
 };
 
 // Based on Java's String.hashCode, a simple but not
@@ -432,7 +434,7 @@ function generateHash( module, testName ) {
 		len = str.length;
 
 	for ( ; i < len; i++ ) {
-		hash  = ( ( hash << 5 ) - hash ) + str.charCodeAt( i );
+		hash = ( ( hash << 5 ) - hash ) + str.charCodeAt( i );
 		hash |= 0;
 	}
 
@@ -467,7 +469,7 @@ function saveGlobal() {
 		for ( var key in global ) {
 			if ( hasOwn.call( global, key ) ) {
 
-				// in Opera sometimes DOM element ids show up here, ignore them
+				// In Opera sometimes DOM element ids show up here, ignore them
 				if ( /^qunit-test-output/.test( key ) ) {
 					continue;
 				}
@@ -514,22 +516,22 @@ function test( testName, expected, callback, async ) {
 		expected = null;
 	}
 
-	newTest = new Test({
+	newTest = new Test( {
 		testName: testName,
 		expected: expected,
 		async: async,
 		callback: callback
-	});
+	} );
 
 	newTest.queue();
 }
 
 // Will be exposed as QUnit.skip
 function skip( testName ) {
-	var test = new Test({
+	var test = new Test( {
 		testName: testName,
 		skip: true
-	});
+	} );
 
 	test.queue();
 }

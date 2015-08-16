@@ -3,7 +3,7 @@ if ( defined.document ) {
 
 	// Deprecated
 	// Extend assert methods to QUnit and Global scope through Backwards compatibility
-	(function() {
+	( function() {
 		var i,
 			assertions = Assert.prototype;
 
@@ -17,9 +17,9 @@ if ( defined.document ) {
 		for ( i in assertions ) {
 			QUnit[ i ] = applyCurrent( assertions[ i ] );
 		}
-	})();
+	} )();
 
-	(function() {
+	( function() {
 		var i, l,
 			keys = [
 				"test",
@@ -44,7 +44,7 @@ if ( defined.document ) {
 		for ( i = 0, l = keys.length; i < l; i++ ) {
 			window[ keys[ i ] ] = QUnit[ keys[ i ] ];
 		}
-	})();
+	} )();
 
 	window.QUnit = QUnit;
 }

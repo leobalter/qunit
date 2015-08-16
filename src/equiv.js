@@ -1,6 +1,6 @@
 // Test for equality any JavaScript type.
 // Author: Philippe Rathé <prathe@gmail.com>
-QUnit.equiv = (function() {
+QUnit.equiv = ( function() {
 
 	// Call the o related callback with the given arguments.
 	function bindCallbacks( o, callbacks, args ) {
@@ -9,35 +9,34 @@ QUnit.equiv = (function() {
 			if ( QUnit.objectType( callbacks[ prop ] ) === "function" ) {
 				return callbacks[ prop ].apply( callbacks, args );
 			} else {
-				return callbacks[ prop ]; // or undefined
+				return callbacks[ prop ];
 			}
 		}
 	}
 
-	// the real equiv function
+	// The real equiv function
 	var innerEquiv,
 
-		// stack to decide between skip/abort functions
+		// Stack to decide between skip/abort functions
 		callers = [],
 
-		// stack to avoiding loops from circular referencing
+		// Stack to avoiding loops from circular referencing
 		parents = [],
 		parentsB = [],
 
 		getProto = Object.getPrototypeOf || function( obj ) {
-			/* jshint camelcase: false, proto: true */
-			return obj.__proto__;
-		},
-		callbacks = (function() {
+				/* jshint camelcase: false, proto: true */
+				return obj.__proto__;
+			},
+		callbacks = ( function() {
 
-			// for string, boolean, number and null
+			// For string, boolean, number and null
 			function useStrictEquality( b, a ) {
 
 				/*jshint eqeqeq:false */
 				if ( b instanceof a.constructor || a instanceof b.constructor ) {
 
-					// to catch short annotation VS 'new' annotation of a
-					// declaration
+					// To catch short annotation VS 'new' annotation of a declaration
 					// e.g. var i = 1;
 					// var j = new Number(1);
 					return a == b;
@@ -64,10 +63,10 @@ QUnit.equiv = (function() {
 				"regexp": function( b, a ) {
 					return QUnit.objectType( b ) === "regexp" &&
 
-						// the regex itself
+						// The regex itself
 						a.source === b.source &&
 
-						// and its modifiers
+						// And its modifiers
 						a.global === b.global &&
 
 						// (gmi) ...
@@ -87,18 +86,19 @@ QUnit.equiv = (function() {
 				"array": function( b, a ) {
 					var i, j, len, loop, aCircular, bCircular;
 
-					// b could be an object literal here
+					// `b` could be an object literal here
 					if ( QUnit.objectType( b ) !== "array" ) {
 						return false;
 					}
 
 					len = a.length;
 					if ( len !== b.length ) {
-						// safe and faster
+
+						// Safe and faster
 						return false;
 					}
 
-					// track reference to avoid circular references
+					// Track reference to avoid circular references
 					parents.push( a );
 					parentsB.push( b );
 					for ( i = 0; i < len; i++ ) {
@@ -130,7 +130,7 @@ QUnit.equiv = (function() {
 				"set": function( b, a ) {
 					var aArray, bArray;
 
-					// b could be any object here
+					// `b` could be any object here
 					if ( QUnit.objectType( b ) !== "set" ) {
 						return false;
 					}
@@ -138,11 +138,11 @@ QUnit.equiv = (function() {
 					aArray = [];
 					a.forEach( function( v ) {
 						aArray.push( v );
-					});
+					} );
 					bArray = [];
 					b.forEach( function( v ) {
 						bArray.push( v );
-					});
+					} );
 
 					return innerEquiv( bArray, aArray );
 				},
@@ -150,7 +150,7 @@ QUnit.equiv = (function() {
 				"map": function( b, a ) {
 					var aArray, bArray;
 
-					// b could be any object here
+					// `b` could be any object here
 					if ( QUnit.objectType( b ) !== "map" ) {
 						return false;
 					}
@@ -158,11 +158,11 @@ QUnit.equiv = (function() {
 					aArray = [];
 					a.forEach( function( v, k ) {
 						aArray.push( [ k, v ] );
-					});
+					} );
 					bArray = [];
 					b.forEach( function( v, k ) {
 						bArray.push( [ k, v ] );
-					});
+					} );
 
 					return innerEquiv( bArray, aArray );
 				},
@@ -170,32 +170,34 @@ QUnit.equiv = (function() {
 				"object": function( b, a ) {
 
 					/*jshint forin:false */
-					var i, j, loop, aCircular, bCircular,
-						// Default to true
-						eq = true,
-						aProperties = [],
-						bProperties = [];
+					var i, j, loop, aCircular, bCircular, protoA, protoB;
 
-					// comparing constructors is more strict than using
-					// instanceof
+					// Default to true
+					var eq = true;
+					var aProperties = [];
+					var bProperties = [];
+
+					// Comparing constructors is more strict than using `instanceof`
 					if ( a.constructor !== b.constructor ) {
+						protoA = getProto( a );
+						protoB = getProto( b );
 
 						// Allow objects with no prototype to be equivalent to
 						// objects with Object as their constructor.
-						if ( !( ( getProto( a ) === null && getProto( b ) === Object.prototype ) ||
-							( getProto( b ) === null && getProto( a ) === Object.prototype ) ) ) {
+						if ( !( ( protoA === null && protoB === Object.prototype ) ||
+								( protoB === null && protoA === Object.prototype ) ) ) {
 							return false;
 						}
 					}
 
-					// stack constructor before traversing properties
+					// Stack constructor before traversing properties
 					callers.push( a.constructor );
 
-					// track reference to avoid circular references
+					// Track reference to avoid circular references
 					parents.push( a );
 					parentsB.push( b );
 
-					// be strict: don't ensure hasOwnProperty and go deep
+					// Be strict: don't ensure hasOwnProperty and go deep
 					for ( i in a ) {
 						loop = false;
 						for ( j = 0; j < parents.length; j++ ) {
@@ -219,41 +221,50 @@ QUnit.equiv = (function() {
 
 					parents.pop();
 					parentsB.pop();
-					callers.pop(); // unstack, we are done
+
+					// Unstack, we are done
+					callers.pop();
 
 					for ( i in b ) {
-						bProperties.push( i ); // collect b's properties
+
+						// Collect b's properties
+						bProperties.push( i );
 					}
 
 					// Ensures identical properties name
 					return eq && innerEquiv( aProperties.sort(), bProperties.sort() );
 				}
 			};
-		}());
+		}() );
 
-	innerEquiv = function() { // can take multiple arguments
+	// Can take multiple arguments
+	innerEquiv = function() {
 		var args = [].slice.apply( arguments );
 		if ( args.length < 2 ) {
-			return true; // end transition
+
+			// End transition
+			return true;
 		}
 
-		return ( (function( a, b ) {
-			if ( a === b ) {
-				return true; // catch the most you can
-			} else if ( a === null || b === null || typeof a === "undefined" ||
-					typeof b === "undefined" ||
-					QUnit.objectType( a ) !== QUnit.objectType( b ) ) {
+		return ( ( function( a, b ) {
+				if ( a === b ) {
 
-				// don't lose time with error prone cases
-				return false;
-			} else {
-				return bindCallbacks( a, callbacks, [ b, a ] );
-			}
+					// Catch the most you can
+					return true;
+				} else if ( a === null || b === null || typeof a === "undefined" ||
+						typeof b === "undefined" ||
+						QUnit.objectType( a ) !== QUnit.objectType( b ) ) {
 
-			// apply transition with (1..n) arguments
-		}( args[ 0 ], args[ 1 ] ) ) &&
+					// Don't lose time with error prone cases
+					return false;
+				} else {
+					return bindCallbacks( a, callbacks, [ b, a ] );
+				}
+
+			// Apply transition with (1..n) arguments
+			}( args[ 0 ], args[ 1 ] ) ) &&
 			innerEquiv.apply( this, args.splice( 1, args.length - 1 ) ) );
 	};
 
 	return innerEquiv;
-}());
+}() );

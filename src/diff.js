@@ -110,23 +110,31 @@ QUnit.diff = ( function() {
 	 * @param {!Array.<!DiffMatchPatch.Diff>} diffs Array of diff tuples.
 	 */
 	DiffMatchPatch.prototype.diffCleanupEfficiency = function( diffs ) {
-		var changes, equalities, equalitiesLength, lastequality,
-			pointer, preIns, preDel, postIns, postDel;
-		changes = false;
-		equalities = []; // Stack of indices where equalities are found.
-		equalitiesLength = 0; // Keeping our own length var is faster in JS.
+		var changes = false;
+
+		// Stack of indices where equalities are found.
+		var equalities = [];
+
+		// Keeping our own length var is faster in JS.
+		var equalitiesLength = 0;
+
 		/** @type {?string} */
-		lastequality = null;
+		var lastequality = null;
+
 		// Always equal to diffs[equalities[equalitiesLength - 1]][1]
-		pointer = 0; // Index of current position.
+		var pointer = 0; // Index of current position.
+
 		// Is there an insertion operation before the last equality.
-		preIns = false;
+		var preIns = false;
+
 		// Is there a deletion operation before the last equality.
-		preDel = false;
+		var preDel = false;
+
 		// Is there an insertion operation after the last equality.
-		postIns = false;
+		var postIns = false;
+
 		// Is there a deletion operation after the last equality.
-		postDel = false;
+		var postDel = false;
 		while ( pointer < diffs.length ) {
 
 			// Equality found.
@@ -179,11 +187,14 @@ QUnit.diff = ( function() {
 					equalitiesLength--; // Throw away the equality we just deleted;
 					lastequality = null;
 					if ( preIns && preDel ) {
+
 						// No changes made which could affect previous entry, keep going.
 						postIns = postDel = true;
 						equalitiesLength = 0;
 					} else {
-						equalitiesLength--; // Throw away the previous equality.
+
+						// Throw away the previous equality.
+						equalitiesLength--;
 						pointer = equalitiesLength > 0 ? equalities[ equalitiesLength - 1 ] : -1;
 						postIns = postDel = false;
 					}
@@ -205,11 +216,16 @@ QUnit.diff = ( function() {
 	 * @return {string} HTML representation.
 	 */
 	DiffMatchPatch.prototype.diffPrettyHtml = function( diffs ) {
-		var op, data, x,
-			html = [];
+		var op, data, x;
+		var html = [];
+
 		for ( x = 0; x < diffs.length; x++ ) {
-			op = diffs[ x ][ 0 ]; // Operation (insert, delete, equal)
-			data = diffs[ x ][ 1 ]; // Text of change.
+
+			// Operation (insert, delete, equal)
+			op = diffs[ x ][ 0 ];
+
+			// Text of change.
+			data = diffs[ x ][ 1 ];
 			switch ( op ) {
 			case DIFF_INSERT:
 				html[ x ] = "<ins>" + data + "</ins>";
@@ -234,10 +250,12 @@ QUnit.diff = ( function() {
 	 */
 	DiffMatchPatch.prototype.diffCommonPrefix = function( text1, text2 ) {
 		var pointermid, pointermax, pointermin, pointerstart;
+
 		// Quick check for common null cases.
 		if ( !text1 || !text2 || text1.charAt( 0 ) !== text2.charAt( 0 ) ) {
 			return 0;
 		}
+
 		// Binary search.
 		// Performance analysis: http://neil.fraser.name/news/2007/10/09/
 		pointermin = 0;
@@ -265,12 +283,14 @@ QUnit.diff = ( function() {
 	 */
 	DiffMatchPatch.prototype.diffCommonSuffix = function( text1, text2 ) {
 		var pointermid, pointermax, pointermin, pointerend;
+
 		// Quick check for common null cases.
 		if ( !text1 ||
 				!text2 ||
 				text1.charAt( text1.length - 1 ) !== text2.charAt( text2.length - 1 ) ) {
 			return 0;
 		}
+
 		// Binary search.
 		// Performance analysis: http://neil.fraser.name/news/2007/10/09/
 		pointermin = 0;
@@ -308,6 +328,7 @@ QUnit.diff = ( function() {
 			midCommon, diffsA, diffsB;
 
 		if ( !text1 ) {
+
 			// Just add some text (speedup).
 			return [
 				[ DIFF_INSERT, text2 ]
@@ -315,6 +336,7 @@ QUnit.diff = ( function() {
 		}
 
 		if ( !text2 ) {
+
 			// Just delete some text (speedup).
 			return [
 				[ DIFF_DELETE, text1 ]
@@ -325,12 +347,14 @@ QUnit.diff = ( function() {
 		shorttext = text1.length > text2.length ? text2 : text1;
 		i = longtext.indexOf( shorttext );
 		if ( i !== -1 ) {
+
 			// Shorter text is inside the longer text (speedup).
 			diffs = [
 				[ DIFF_INSERT, longtext.substring( 0, i ) ],
 				[ DIFF_EQUAL, shorttext ],
 				[ DIFF_INSERT, longtext.substring( i + shorttext.length ) ]
 			];
+
 			// Swap insertions for deletions if diff is reversed.
 			if ( text1.length > text2.length ) {
 				diffs[ 0 ][ 0 ] = diffs[ 2 ][ 0 ] = DIFF_DELETE;
@@ -339,6 +363,7 @@ QUnit.diff = ( function() {
 		}
 
 		if ( shorttext.length === 1 ) {
+
 			// Single character string.
 			// After the previous speedup, the character can't be an equality.
 			return [
@@ -350,15 +375,18 @@ QUnit.diff = ( function() {
 		// Check to see if the problem can be split in two.
 		hm = this.diffHalfMatch( text1, text2 );
 		if ( hm ) {
+
 			// A half-match was found, sort out the return data.
 			text1A = hm[ 0 ];
 			text1B = hm[ 1 ];
 			text2A = hm[ 2 ];
 			text2B = hm[ 3 ];
 			midCommon = hm[ 4 ];
+
 			// Send both pairs off for separate processing.
 			diffsA = this.DiffMain( text1A, text2A, checklines, deadline );
 			diffsB = this.DiffMain( text1B, text2B, checklines, deadline );
+
 			// Merge the results.
 			return diffsA.concat( [
 				[ DIFF_EQUAL, midCommon ]
@@ -391,9 +419,13 @@ QUnit.diff = ( function() {
 		longtext = text1.length > text2.length ? text1 : text2;
 		shorttext = text1.length > text2.length ? text2 : text1;
 		if ( longtext.length < 4 || shorttext.length * 2 < longtext.length ) {
-			return null; // Pointless.
+
+			// Pointless.
+			return null;
 		}
-		dmp = this; // 'this' becomes 'window' in a closure.
+
+		// 'this' becomes 'window' in a closure.
+		dmp = this;
 
 		/**
 		 * Does a substring of shorttext exist within longtext such that the substring
@@ -408,12 +440,13 @@ QUnit.diff = ( function() {
 		 * @private
 		 */
 		function diffHalfMatchI( longtext, shorttext, i ) {
-			var seed, j, bestCommon, prefixLength, suffixLength,
-				bestLongtextA, bestLongtextB, bestShorttextA, bestShorttextB;
+			var prefixLength, suffixLength, bestLongtextA, bestLongtextB,
+				bestShorttextA, bestShorttextB;
+
 			// Start with a 1/4 length substring at position i as a seed.
-			seed = longtext.substring( i, i + Math.floor( longtext.length / 4 ) );
-			j = -1;
-			bestCommon = "";
+			var seed = longtext.substring( i, i + Math.floor( longtext.length / 4 ) );
+			var j = -1;
+			var bestCommon = "";
 			while ( ( j = shorttext.indexOf( seed, j + 1 ) ) !== -1 ) {
 				prefixLength = dmp.diffCommonPrefix( longtext.substring( i ),
 					shorttext.substring( j ) );
@@ -440,9 +473,11 @@ QUnit.diff = ( function() {
 		// First check if the second quarter is the seed for a half-match.
 		hm1 = diffHalfMatchI( longtext, shorttext,
 			Math.ceil( longtext.length / 4 ) );
+
 		// Check again based on the third quarter.
 		hm2 = diffHalfMatchI( longtext, shorttext,
 			Math.ceil( longtext.length / 2 ) );
+
 		if ( !hm1 && !hm2 ) {
 			return null;
 		} else if ( !hm2 ) {
@@ -450,6 +485,7 @@ QUnit.diff = ( function() {
 		} else if ( !hm1 ) {
 			hm = hm2;
 		} else {
+
 			// Both matched.  Select the longest.
 			hm = hm1[ 4 ].length > hm2[ 4 ].length ? hm1 : hm2;
 		}
@@ -482,29 +518,30 @@ QUnit.diff = ( function() {
 	 * @private
 	 */
 	DiffMatchPatch.prototype.diffLineMode = function( text1, text2, deadline ) {
-		var a, diffs, linearray, pointer, countInsert,
-			countDelete, textInsert, textDelete, j;
+		var j;
+
 		// Scan the text on a line-by-line basis first.
-		a = this.diffLinesToChars( text1, text2 );
+		var a = this.diffLinesToChars( text1, text2 );
 		text1 = a.chars1;
 		text2 = a.chars2;
-		linearray = a.lineArray;
+		var linearray = a.lineArray;
 
-		diffs = this.DiffMain( text1, text2, false, deadline );
+		var diffs = this.DiffMain( text1, text2, false, deadline );
 
 		// Convert the diff back to original text.
 		this.diffCharsToLines( diffs, linearray );
+
 		// Eliminate freak matches (e.g. blank lines)
 		this.diffCleanupSemantic( diffs );
 
 		// Rediff any replacement blocks, this time character-by-character.
 		// Add a dummy entry at the end.
 		diffs.push( [ DIFF_EQUAL, "" ] );
-		pointer = 0;
-		countDelete = 0;
-		countInsert = 0;
-		textDelete = "";
-		textInsert = "";
+		var pointer = 0;
+		var countDelete = 0;
+		var countInsert = 0;
+		var textDelete = "";
+		var textInsert = "";
 		while ( pointer < diffs.length ) {
 			switch ( diffs[ pointer ][ 0 ] ) {
 			case DIFF_INSERT:
@@ -516,8 +553,10 @@ QUnit.diff = ( function() {
 				textDelete += diffs[ pointer ][ 1 ];
 				break;
 			case DIFF_EQUAL:
+
 				// Upon reaching an equality, check for prior redundancies.
 				if ( countDelete >= 1 && countInsert >= 1 ) {
+
 					// Delete the offending records and add the merged ones.
 					diffs.splice( pointer - countDelete - countInsert,
 						countDelete + countInsert );
@@ -536,7 +575,9 @@ QUnit.diff = ( function() {
 			}
 			pointer++;
 		}
-		diffs.pop(); // Remove the dummy entry at the end.
+
+		// Remove the dummy entry at the end.
+		diffs.pop();
 
 		return diffs;
 	};
@@ -552,17 +593,17 @@ QUnit.diff = ( function() {
 	 * @private
 	 */
 	DiffMatchPatch.prototype.diffBisect = function( text1, text2, deadline ) {
-		var text1Length, text2Length, maxD, vOffset, vLength,
-			v1, v2, x, delta, front, k1start, k1end, k2start,
-			k2end, k2Offset, k1Offset, x1, x2, y1, y2, d, k1, k2;
+		var x, k2Offset, k1Offset, x1, x2, y1, y2, d, k1, k2;
+
 		// Cache the text lengths to prevent multiple calls.
-		text1Length = text1.length;
-		text2Length = text2.length;
-		maxD = Math.ceil( ( text1Length + text2Length ) / 2 );
-		vOffset = maxD;
-		vLength = 2 * maxD;
-		v1 = new Array( vLength );
-		v2 = new Array( vLength );
+		var text1Length = text1.length;
+		var text2Length = text2.length;
+		var maxD = Math.ceil( ( text1Length + text2Length ) / 2 );
+		var vOffset = maxD;
+		var vLength = 2 * maxD;
+		var v1 = new Array( vLength );
+		var v2 = new Array( vLength );
+
 		// Setting all elements to -1 is faster in Chrome & Firefox than mixing
 		// integers and undefined.
 		for ( x = 0; x < vLength; x++ ) {
@@ -571,17 +612,20 @@ QUnit.diff = ( function() {
 		}
 		v1[ vOffset + 1 ] = 0;
 		v2[ vOffset + 1 ] = 0;
-		delta = text1Length - text2Length;
+		var delta = text1Length - text2Length;
+
 		// If the total number of characters is odd, then the front path will collide
 		// with the reverse path.
-		front = ( delta % 2 !== 0 );
+		var front = ( delta % 2 !== 0 );
+
 		// Offsets for start and end of k loop.
 		// Prevents mapping of space beyond the grid.
-		k1start = 0;
-		k1end = 0;
-		k2start = 0;
-		k2end = 0;
+		var k1start = 0;
+		var k1end = 0;
+		var k2start = 0;
+		var k2end = 0;
 		for ( d = 0; d < maxD; d++ ) {
+
 			// Bail out if deadline is reached.
 			if ( ( new Date() ).getTime() > deadline ) {
 				break;
@@ -603,17 +647,21 @@ QUnit.diff = ( function() {
 				}
 				v1[ k1Offset ] = x1;
 				if ( x1 > text1Length ) {
+
 					// Ran off the right of the graph.
 					k1end += 2;
 				} else if ( y1 > text2Length ) {
+
 					// Ran off the bottom of the graph.
 					k1start += 2;
 				} else if ( front ) {
 					k2Offset = vOffset + delta - k1;
 					if ( k2Offset >= 0 && k2Offset < vLength && v2[ k2Offset ] !== -1 ) {
+
 						// Mirror x2 onto top-left coordinate system.
 						x2 = text1Length - v2[ k2Offset ];
 						if ( x1 >= x2 ) {
+
 							// Overlap detected.
 							return this.diffBisectSplit( text1, text2, x1, y1, deadline );
 						}
@@ -638,9 +686,11 @@ QUnit.diff = ( function() {
 				}
 				v2[ k2Offset ] = x2;
 				if ( x2 > text1Length ) {
+
 					// Ran off the left of the graph.
 					k2end += 2;
 				} else if ( y2 > text2Length ) {
+
 					// Ran off the top of the graph.
 					k2start += 2;
 				} else if ( !front ) {
@@ -648,9 +698,11 @@ QUnit.diff = ( function() {
 					if ( k1Offset >= 0 && k1Offset < vLength && v1[ k1Offset ] !== -1 ) {
 						x1 = v1[ k1Offset ];
 						y1 = vOffset + x1 - k1Offset;
+
 						// Mirror x2 onto top-left coordinate system.
 						x2 = text1Length - x2;
 						if ( x1 >= x2 ) {
+
 							// Overlap detected.
 							return this.diffBisectSplit( text1, text2, x1, y1, deadline );
 						}
@@ -658,6 +710,7 @@ QUnit.diff = ( function() {
 				}
 			}
 		}
+
 		// Diff took too long and hit the deadline or
 		// number of diffs equals number of characters, no commonality at all.
 		return [
@@ -678,15 +731,14 @@ QUnit.diff = ( function() {
 	 * @private
 	 */
 	DiffMatchPatch.prototype.diffBisectSplit = function( text1, text2, x, y, deadline ) {
-		var text1a, text1b, text2a, text2b, diffs, diffsb;
-		text1a = text1.substring( 0, x );
-		text2a = text2.substring( 0, y );
-		text1b = text1.substring( x );
-		text2b = text2.substring( y );
+		var text1a = text1.substring( 0, x );
+		var text2a = text2.substring( 0, y );
+		var text1b = text1.substring( x );
+		var text2b = text2.substring( y );
 
 		// Compute both diffs serially.
-		diffs = this.DiffMain( text1a, text2a, false, deadline );
-		diffsb = this.DiffMain( text1b, text2b, false, deadline );
+		var diffs = this.DiffMain( text1a, text2a, false, deadline );
+		var diffsb = this.DiffMain( text1b, text2b, false, deadline );
 
 		return diffs.concat( diffsb );
 	};
@@ -696,22 +748,29 @@ QUnit.diff = ( function() {
 	 * @param {!Array.<!DiffMatchPatch.Diff>} diffs Array of diff tuples.
 	 */
 	DiffMatchPatch.prototype.diffCleanupSemantic = function( diffs ) {
-		var changes, equalities, equalitiesLength, lastequality,
-			pointer, lengthInsertions2, lengthDeletions2, lengthInsertions1,
-			lengthDeletions1, deletion, insertion, overlapLength1, overlapLength2;
-		changes = false;
-		equalities = []; // Stack of indices where equalities are found.
-		equalitiesLength = 0; // Keeping our own length var is faster in JS.
+		var deletion, insertion, overlapLength1, overlapLength2;
+		var changes = false;
+
+		// Stack of indices where equalities are found.
+		var equalities = [];
+
+		// Keeping our own length var is faster in JS.
+		var equalitiesLength = 0;
+
 		/** @type {?string} */
-		lastequality = null;
+		var lastequality = null;
+
 		// Always equal to diffs[equalities[equalitiesLength - 1]][1]
-		pointer = 0; // Index of current position.
+		var pointer = 0; // Index of current position.
+
 		// Number of characters that changed prior to the equality.
-		lengthInsertions1 = 0;
-		lengthDeletions1 = 0;
+		var lengthInsertions1 = 0;
+		var lengthDeletions1 = 0;
+
 		// Number of characters that changed after the equality.
-		lengthInsertions2 = 0;
-		lengthDeletions2 = 0;
+		var lengthInsertions2 = 0;
+		var lengthDeletions2 = 0;
+
 		while ( pointer < diffs.length ) {
 			if ( diffs[ pointer ][ 0 ] === DIFF_EQUAL ) { // Equality found.
 				equalities[ equalitiesLength++ ] = pointer;
@@ -720,14 +779,16 @@ QUnit.diff = ( function() {
 				lengthInsertions2 = 0;
 				lengthDeletions2 = 0;
 				lastequality = diffs[ pointer ][ 1 ];
-			} else { // An insertion or deletion.
+
+			// An insertion or deletion.
+			} else {
 				if ( diffs[ pointer ][ 0 ] === DIFF_INSERT ) {
 					lengthInsertions2 += diffs[ pointer ][ 1 ].length;
 				} else {
 					lengthDeletions2 += diffs[ pointer ][ 1 ].length;
 				}
-				// Eliminate an equality that is smaller or equal to the edits on both
-				// sides of it.
+
+				// Eliminate an equality that is smaller or equal to the edits on both sides of it.
 				if ( lastequality && ( lastequality.length <=
 						Math.max( lengthInsertions1, lengthDeletions1 ) ) &&
 						( lastequality.length <= Math.max( lengthInsertions2,
@@ -784,6 +845,7 @@ QUnit.diff = ( function() {
 				if ( overlapLength1 >= overlapLength2 ) {
 					if ( overlapLength1 >= deletion.length / 2 ||
 							overlapLength1 >= insertion.length / 2 ) {
+
 						// Overlap found.  Insert an equality and trim the surrounding edits.
 						diffs.splice(
 							pointer,
@@ -831,22 +893,26 @@ QUnit.diff = ( function() {
 	 * @private
 	 */
 	DiffMatchPatch.prototype.diffCommonOverlap = function( text1, text2 ) {
-		var text1Length, text2Length, textLength,
-			best, length, pattern, found;
+		var pattern, found;
+
 		// Cache the text lengths to prevent multiple calls.
-		text1Length = text1.length;
-		text2Length = text2.length;
+		var text1Length = text1.length;
+		var text2Length = text2.length;
+
 		// Eliminate the null case.
 		if ( text1Length === 0 || text2Length === 0 ) {
 			return 0;
 		}
+
 		// Truncate the longer string.
 		if ( text1Length > text2Length ) {
 			text1 = text1.substring( text1Length - text2Length );
 		} else if ( text1Length < text2Length ) {
 			text2 = text2.substring( 0, text1Length );
 		}
-		textLength = Math.min( text1Length, text2Length );
+
+		var textLength = Math.min( text1Length, text2Length );
+
 		// Quick check for the worst case.
 		if ( text1 === text2 ) {
 			return textLength;
@@ -855,8 +921,8 @@ QUnit.diff = ( function() {
 		// Start by looking for a single character match
 		// and increase length until no match is found.
 		// Performance analysis: http://neil.fraser.name/news/2010/11/04/
-		best = 0;
-		length = 1;
+		var best = 0;
+		var length = 1;
 		while ( true ) {
 			pattern = text1.substring( textLength - length );
 			found = text2.indexOf( pattern );
@@ -884,9 +950,13 @@ QUnit.diff = ( function() {
 	 * @private
 	 */
 	DiffMatchPatch.prototype.diffLinesToChars = function( text1, text2 ) {
-		var lineArray, lineHash, chars1, chars2;
-		lineArray = []; // e.g. lineArray[4] === 'Hello\n'
-		lineHash = {}; // e.g. lineHash['Hello\n'] === 4
+		var chars1, chars2;
+
+		// e.g. lineArray[4] === 'Hello\n'
+		var lineArray = [];
+
+		// e.g. lineHash['Hello\n'] === 4
+		var lineHash = {};
 
 		// '\x00' is a valid character, but various debuggers don't like it.
 		// So we'll insert a junk entry to avoid generating a null character.
@@ -901,15 +971,17 @@ QUnit.diff = ( function() {
 		 * @private
 		 */
 		function diffLinesToCharsMunge( text ) {
-			var chars, lineStart, lineEnd, lineArrayLength, line;
-			chars = "";
+			var line;
+			var chars = "";
+
 			// Walk the text, pulling out a substring for each line.
 			// text.split('\n') would would temporarily double our memory footprint.
 			// Modifying text would create many large strings to garbage collect.
-			lineStart = 0;
-			lineEnd = -1;
+			var lineStart = 0;
+			var lineEnd = -1;
+
 			// Keeping our own length variable is faster than looking it up.
-			lineArrayLength = lineArray.length;
+			var lineArrayLength = lineArray.length;
 			while ( lineEnd < text.length - 1 ) {
 				lineEnd = text.indexOf( "\n", lineStart );
 				if ( lineEnd === -1 ) {
@@ -964,15 +1036,16 @@ QUnit.diff = ( function() {
 	 * @param {!Array.<!DiffMatchPatch.Diff>} diffs Array of diff tuples.
 	 */
 	DiffMatchPatch.prototype.diffCleanupMerge = function( diffs ) {
-		var pointer, countDelete, countInsert, textInsert, textDelete,
-			commonlength, changes, diffPointer, position;
-		diffs.push( [ DIFF_EQUAL, "" ] ); // Add a dummy entry at the end.
-		pointer = 0;
-		countDelete = 0;
-		countInsert = 0;
-		textDelete = "";
-		textInsert = "";
-		commonlength;
+		var diffPointer, position;
+
+		// Add a dummy entry at the end.
+		diffs.push( [ DIFF_EQUAL, "" ] );
+		var pointer = 0;
+		var countDelete = 0;
+		var countInsert = 0;
+		var textDelete = "";
+		var textInsert = "";
+		var commonlength;
 		while ( pointer < diffs.length ) {
 			switch ( diffs[ pointer ][ 0 ] ) {
 			case DIFF_INSERT:
@@ -986,9 +1059,11 @@ QUnit.diff = ( function() {
 				pointer++;
 				break;
 			case DIFF_EQUAL:
+
 				// Upon reaching an equality, check for prior redundancies.
 				if ( countDelete + countInsert > 1 ) {
 					if ( countDelete !== 0 && countInsert !== 0 ) {
+
 						// Factor out any common prefixies.
 						commonlength = this.diffCommonPrefix( textInsert, textDelete );
 						if ( commonlength !== 0 ) {
@@ -1006,6 +1081,7 @@ QUnit.diff = ( function() {
 							textInsert = textInsert.substring( commonlength );
 							textDelete = textDelete.substring( commonlength );
 						}
+
 						// Factor out any common suffixies.
 						commonlength = this.diffCommonSuffix( textInsert, textDelete );
 						if ( commonlength !== 0 ) {
@@ -1017,6 +1093,7 @@ QUnit.diff = ( function() {
 								commonlength );
 						}
 					}
+
 					// Delete the offending records and add the merged ones.
 					if ( countDelete === 0 ) {
 						diffs.splice( pointer - countInsert,
@@ -1055,7 +1132,7 @@ QUnit.diff = ( function() {
 		// Second pass: look for single edits surrounded on both sides by equalities
 		// which can be shifted sideways to eliminate an equality.
 		// e.g: A<ins>BA</ins>C -> <ins>AB</ins>AC
-		changes = false;
+		var changes = false;
 		pointer = 1;
 
 		// Intentionally ignore the first and last element (don't need checking).
@@ -1093,6 +1170,7 @@ QUnit.diff = ( function() {
 			}
 			pointer++;
 		}
+
 		// If shifts were made, the diff needs reordering and another shift sweep.
 		if ( changes ) {
 			this.diffCleanupMerge( diffs );
@@ -1100,11 +1178,10 @@ QUnit.diff = ( function() {
 	};
 
 	return function( o, n ) {
-		var diff, output, text;
-		diff = new DiffMatchPatch();
-		output = diff.DiffMain( o, n );
+		var diff = new DiffMatchPatch();
+		var output = diff.DiffMain( o, n );
 		diff.diffCleanupEfficiency( output );
-		text = diff.diffPrettyHtml( output );
+		var text = diff.diffPrettyHtml( output );
 
 		return text;
 	};
