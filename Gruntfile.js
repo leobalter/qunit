@@ -19,7 +19,7 @@ function process( code, filepath ) {
 		.replace( /@DATE/g, ( new Date() ).toISOString().replace( /:\d+\.\d+Z$/, "Z" ) );
 }
 
-grunt.initConfig({
+grunt.initConfig( {
 	pkg: grunt.file.readJSON( "package.json" ),
 	concat: {
 		"src-js": {
@@ -132,7 +132,7 @@ grunt.initConfig({
 		],
 		tasks: "default"
 	}
-});
+} );
 
 // TODO: Extract this task later, if feasible
 // Also spawn a separate process to keep tests atomic
@@ -144,21 +144,21 @@ grunt.registerTask( "test-on-node", function() {
 
 	global.QUnit = QUnit;
 
-	QUnit.testStart(function() {
+	QUnit.testStart( function() {
 		testActive = true;
-	});
-	QUnit.log(function( details ) {
+	} );
+	QUnit.log( function( details ) {
 		if ( !testActive || details.result ) {
 			return;
 		}
 		var message = "name: " + details.name + " module: " + details.module +
 			" message: " + details.message;
 		grunt.log.error( message );
-	});
-	QUnit.testDone(function() {
+	} );
+	QUnit.testDone( function() {
 		testActive = false;
-	});
-	QUnit.done(function( details ) {
+	} );
+	QUnit.done( function( details ) {
 		if ( runDone ) {
 			return;
 		}
@@ -172,7 +172,7 @@ grunt.registerTask( "test-on-node", function() {
 		}
 		done( succeeded );
 		runDone = true;
-	});
+	} );
 	QUnit.config.autorun = false;
 
 	require( "./test/logs" );
@@ -186,7 +186,7 @@ grunt.registerTask( "test-on-node", function() {
 	require( "./test/globals-node" );
 
 	QUnit.load();
-});
+} );
 
 grunt.registerTask( "build", [ "concat" ] );
 grunt.registerTask( "default", [ "build", "jshint", "jscs", "search", "qunit", "test-on-node" ] );
