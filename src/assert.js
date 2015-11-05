@@ -179,6 +179,37 @@ QUnit.assert = Assert.prototype = {
 		}
 
 		currentTest.assert.push( ok, actual, expectedOutput, message );
+	},
+
+	custom: function( customAssert ) {
+		var currentTest = ( this instanceof Assert && this.test ) || QUnit.config.current;
+
+		// TODO: How to detect chai and other assertion tools?
+		if ( customAssert && customAssert.util && customAssert.util.test ) {
+			var originalTest = customAssert.util.test;
+			customAssert.util.test = function() {
+				var stats = arguments[ 1 ];
+
+				// result, actual, expected, message, negative
+				var actual = stats.length === 3 ? stats[ 0 ] : stats[ 3 ];
+
+				var negate = !!arguments[0].__flags.negate;
+
+				//console.log(arguments[0].__flags);
+				console.log('Object: ', arguments[0].__flags.object);
+				console.log('message: ', arguments[0].__flags.message);
+				console.log('Keys: ', Object.keys(arguments[0].__flags));
+				console.log('Stats: ', arguments[1]);
+
+				var result = originalTest.apply( this, arguments );
+
+				QUnit.assert.push( result, actual/*, expected, message, negative */);
+
+				console.log(result);
+
+				return result;
+			};
+		}
 	}
 };
 
