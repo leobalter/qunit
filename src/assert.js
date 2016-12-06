@@ -54,6 +54,17 @@ Assert.prototype = {
 		};
 	},
 
+	step: function( message ) {
+		var result = !!message;
+		message = message || "Please provide a description argument for assert.step";
+
+		return this.pushResult( {
+			result: result,
+			message,
+			isStep: true
+		} );
+	},
+
 	// Exports test.push() to the user API
 	// Alias of pushResult.
 	push: function( result, actual, expected, message, negative ) {

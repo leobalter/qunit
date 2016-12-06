@@ -343,6 +343,7 @@ Test.prototype = {
 				actual: resultInfo.actual,
 				expected: resultInfo.expected,
 				testId: this.testId,
+				isStep: resultInfo.isStep,
 				negative: resultInfo.negative || false,
 				runtime: now() - this.started
 			};
@@ -357,10 +358,12 @@ Test.prototype = {
 
 		runLoggingCallbacks( "log", details );
 
-		this.assertions.push( {
-			result: !!resultInfo.result,
-			message: resultInfo.message
-		} );
+		if ( !resultInfo.isStep ) {
+			this.assertions.push( {
+				result: !!resultInfo.result,
+				message: resultInfo.message
+			} );
+		}
 	},
 
 	pushFailure: function( message, source, actual ) {
